@@ -2,6 +2,8 @@
 
 A modern, real-time peer-to-peer chat application built with **Next.js 16**, **Socket.io**, and **TypeScript**. Create chat rooms instantly and share codes with friends to start messaging!
 
+**🔗 Live Demo: [https://socket-chat.space.z.ai](https://socket-chat.space.z.ai)**
+
 ![WebSocket Chat](https://img.shields.io/badge/WebSocket-Real--time-emerald?style=for-the-badge)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)
@@ -68,7 +70,9 @@ A modern, real-time peer-to-peer chat application built with **Next.js 16**, **S
 ## 🚀 Quick Start
 
 ### Option 1: Use the Live Demo
-Visit the deployed application and start chatting immediately!
+**🔗 [https://socket-chat.space.z.ai](https://socket-chat.space.z.ai)**
+
+Visit the live demo and start chatting immediately!
 
 ### Option 2: Run Locally
 See the [How to Run Locally](#-how-to-run-locally) section below.
