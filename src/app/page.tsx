@@ -11,6 +11,9 @@ import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { 
   MessageCircle, 
   Users, 
@@ -29,13 +32,28 @@ import {
   Clock,
   Trash2,
   MessageSquare,
-  User
+  User,
+  Paperclip,
+  File,
+  Image,
+  Download,
+  Settings,
+  MapPin,
+  Shield,
+  AlertTriangle
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 interface User {
   id: string
   username: string
+}
+
+interface FileAttachment {
+  name: string
+  type: string
+  size: number
+  data: string
 }
 
 interface Message {
@@ -46,6 +64,7 @@ interface Message {
   timestamp: Date | string
   type: 'public' | 'private' | 'system'
   roomId: string
+  file?: FileAttachment
 }
 
 interface SavedRoom {
@@ -54,7 +73,19 @@ interface SavedRoom {
   hostName?: string
 }
 
+interface UserSettings {
+  profanityFilter: boolean
+  showLocation: boolean
+}
+
 type AppView = 'landing' | 'chat'
+
+// Profanity filter words list
+const PROFANITY_WORDS = [
+  'fuck', 'shit', 'ass', 'bitch', 'damn', 'crap', 'hell', 'bastard',
+  'dick', 'piss', 'cock', 'pussy', 'whore', 'slut', 'fag', 'nigga', 'nigger',
+  'wanker', 'twat', 'cunt', 'bollocks', 'bloody', 'bugger'
+]
 
 // Emoji categories for the picker
 const EMOJI_CATEGORIES = {
@@ -71,6 +102,10 @@ const ALL_EMOJIS = Object.values(EMOJI_CATEGORIES).flat()
 // Local storage keys
 const SAVED_ROOMS_KEY = 'websocket-chat-saved-rooms'
 const LAST_USERNAME_KEY = 'websocket-chat-last-username'
+const USER_SETTINGS_KEY = 'websocket-chat-user-settings'
+
+// Max file size: 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 // Helper function to load from localStorage (used for lazy initialization)
 const loadFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
@@ -81,6 +116,29 @@ const loadFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
   } catch {
     return defaultValue
   }
+}
+
+// Filter profanity from text
+const filterProfanity = (text: string): string => {
+  let filtered = text
+  PROFANITY_WORDS.forEach(word => {
+    const regex = new RegExp(`\\b${word}\\b`, 'gi')
+    filtered = filtered.replace(regex, '****')
+  })
+  return filtered
+}
+
+// Format file size
+const formatFileSize = (bytes: number): string => {
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+}
+
+// Get file icon based on type
+const getFileIcon = (type: string) => {
+  if (type.startsWith('image/')) return Image
+  return File
 }
 
 export default function WebSocketChat() {
@@ -100,11 +158,19 @@ export default function WebSocketChat() {
   const [savedRooms, setSavedRooms] = useState<SavedRoom[]>(() => loadFromLocalStorage(SAVED_ROOMS_KEY, []))
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [emojiCategory, setEmojiCategory] = useState<keyof typeof EMOJI_CATEGORIES>('Smileys')
+  const [settings, setSettings] = useState<UserSettings>(() => loadFromLocalStorage(USER_SETTINGS_KEY, {
+    profanityFilter: true,
+    showLocation: false
+  }))
+  const [showSettings, setShowSettings] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [filePreview, setFilePreview] = useState<string | null>(null)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const socketRef = useRef<Socket | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
 
   // Scroll to bottom when new messages arrive
@@ -116,6 +182,11 @@ export default function WebSocketChat() {
     scrollToBottom()
   }, [messages, scrollToBottom])
 
+  // Save settings to localStorage
+  useEffect(() => {
+    localStorage.setItem(USER_SETTINGS_KEY, JSON.stringify(settings))
+  }, [settings])
+
   // Save room code to localStorage
   const saveRoomCode = useCallback((code: string, hostName?: string) => {
     try {
@@ -125,7 +196,7 @@ export default function WebSocketChat() {
         lastUsed: new Date().toISOString(),
         hostName
       }
-      const updated = [newRoom, ...existing].slice(0, 10) // Keep last 10 rooms
+      const updated = [newRoom, ...existing].slice(0, 10)
       setSavedRooms(updated)
       localStorage.setItem(SAVED_ROOMS_KEY, JSON.stringify(updated))
     } catch (e) {
@@ -154,6 +225,53 @@ export default function WebSocketChat() {
       localStorage.setItem(LAST_USERNAME_KEY, username.trim())
     }
   }, [username])
+
+  // Handle file selection
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > MAX_FILE_SIZE) {
+      toast({
+        title: 'File Too Large',
+        description: 'Maximum file size is 10MB',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    setSelectedFile(file)
+    
+    // Create preview for images
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setFilePreview(e.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+    } else {
+      setFilePreview(null)
+    }
+  }, [toast])
+
+  // Clear selected file
+  const clearSelectedFile = useCallback(() => {
+    setSelectedFile(null)
+    setFilePreview(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }, [])
+
+  // Convert file to base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+  }
 
   // Initialize socket connection
   useEffect(() => {
@@ -355,22 +473,42 @@ export default function WebSocketChat() {
   }, [isConnected, handleStopTyping])
 
   // Send message
-  const sendMessage = useCallback(() => {
-    if (!inputMessage.trim() || !socketRef.current) return
+  const sendMessage = useCallback(async () => {
+    if ((!inputMessage.trim() && !selectedFile) || !socketRef.current) return
+    
+    // Apply profanity filter if enabled
+    let content = inputMessage.trim()
+    if (settings.profanityFilter) {
+      content = filterProfanity(content)
+    }
+
+    // Handle file attachment
+    let fileAttachment: FileAttachment | undefined
+    if (selectedFile) {
+      const base64 = await fileToBase64(selectedFile)
+      fileAttachment = {
+        name: selectedFile.name,
+        type: selectedFile.type,
+        size: selectedFile.size,
+        data: base64
+      }
+    }
     
     if (selectedPrivateUser) {
       socketRef.current.emit('send-private-message', {
         toUserId: selectedPrivateUser.id,
-        content: inputMessage.trim()
+        content,
+        file: fileAttachment
       })
     } else {
-      socketRef.current.emit('send-message', { content: inputMessage.trim() })
+      socketRef.current.emit('send-message', { content, file: fileAttachment })
     }
     
     setInputMessage('')
+    clearSelectedFile()
     handleStopTyping()
     inputRef.current?.focus()
-  }, [inputMessage, selectedPrivateUser, handleStopTyping])
+  }, [inputMessage, selectedPrivateUser, handleStopTyping, settings.profanityFilter, selectedFile, clearSelectedFile])
 
   // Insert emoji into message
   const insertEmoji = useCallback((emoji: string) => {
@@ -409,7 +547,8 @@ export default function WebSocketChat() {
     setIsHost(false)
     setSelectedPrivateUser(null)
     setJoinCode('')
-  }, [])
+    clearSelectedFile()
+  }, [clearSelectedFile])
 
   // Format timestamp
   const formatTime = (timestamp: Date | string) => {
@@ -428,6 +567,16 @@ export default function WebSocketChat() {
     if (diffDays < 7) return `${diffDays} days ago`
     return date.toLocaleDateString()
   }
+
+  // Download file
+  const downloadFile = useCallback((file: FileAttachment) => {
+    const link = document.createElement('a')
+    link.href = file.data
+    link.download = file.name
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }, [])
 
   // Landing Page
   if (view === 'landing') {
@@ -527,6 +676,18 @@ export default function WebSocketChat() {
                   </Button>
                 </div>
               </div>
+
+              {/* Settings Link */}
+              <div className="flex justify-center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowSettings(true)}
+                  className="text-slate-400 hover:text-white"
+                >
+                  <Settings className="w-4 h-4 mr-2" /> Settings
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
@@ -596,6 +757,79 @@ export default function WebSocketChat() {
             </Card>
           )}
         </div>
+
+        {/* Settings Dialog */}
+        <Dialog open={showSettings} onOpenChange={setShowSettings}>
+          <DialogContent className="bg-slate-800 border-slate-700 text-white">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5" /> Settings
+              </DialogTitle>
+              <DialogDescription className="text-slate-400">
+                Customize your chat experience
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6 py-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-white flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-emerald-400" />
+                    Profanity Filter
+                  </Label>
+                  <p className="text-xs text-slate-400">
+                    Filter inappropriate language (ON by default)
+                  </p>
+                </div>
+                <Switch
+                  checked={settings.profanityFilter}
+                  onCheckedChange={(checked) => setSettings(prev => ({ ...prev, profanityFilter: checked }))}
+                />
+              </div>
+              
+              <Separator className="bg-slate-700" />
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-white flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-emerald-400" />
+                    Show General Location
+                  </Label>
+                  <p className="text-xs text-slate-400">
+                    Show country/region only (no addresses)
+                  </p>
+                </div>
+                <Switch
+                  checked={settings.showLocation}
+                  onCheckedChange={(checked) => setSettings(prev => ({ ...prev, showLocation: checked }))}
+                />
+              </div>
+
+              {settings.profanityFilter && (
+                <>
+                  <Separator className="bg-slate-700" />
+                  <div className="flex items-center gap-2 p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                    <Shield className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <p className="text-xs text-emerald-300">
+                      Profanity filter is ON. Inappropriate words will be replaced with ****
+                    </p>
+                  </div>
+                </>
+              )}
+
+              {!settings.profanityFilter && (
+                <>
+                  <Separator className="bg-slate-700" />
+                  <div className="flex items-center gap-2 p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                    <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+                    <p className="text-xs text-amber-300">
+                      Profanity filter is OFF. You may see unfiltered content.
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     )
   }
@@ -636,6 +870,11 @@ export default function WebSocketChat() {
             </div>
             
             <div className="flex items-center gap-2">
+              {settings.profanityFilter && (
+                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs hidden sm:flex">
+                  <Shield className="w-3 h-3 mr-1" /> Filter ON
+                </Badge>
+              )}
               {isConnected ? (
                 <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
                   <Wifi className="w-3 h-3 mr-1" /> Online
@@ -645,6 +884,14 @@ export default function WebSocketChat() {
                   <WifiOff className="w-3 h-3 mr-1" /> Offline
                 </Badge>
               )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSettings(true)}
+                className="text-slate-400 hover:text-white"
+              >
+                <Settings className="w-4 h-4" />
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"
@@ -810,6 +1057,29 @@ export default function WebSocketChat() {
                               </span>
                             </div>
                             <p className="text-sm break-words">{msg.content}</p>
+                            {msg.file && (
+                              <div className="mt-2 p-2 bg-black/20 rounded-lg">
+                                {msg.file.type.startsWith('image/') ? (
+                                  <img src={msg.file.data} alt={msg.file.name} className="max-w-full rounded max-h-48" />
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <File className="w-8 h-8 text-slate-400" />
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-xs truncate">{msg.file.name}</p>
+                                      <p className="text-xs text-slate-400">{formatFileSize(msg.file.size)}</p>
+                                    </div>
+                                  </div>
+                                )}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => downloadFile(msg.file!)}
+                                  className="mt-2 w-full text-xs"
+                                >
+                                  <Download className="w-3 h-3 mr-1" /> Download
+                                </Button>
+                              </div>
+                            )}
                           </div>
                           <span className="text-xs text-slate-500 mt-1 block">
                             {formatTime(msg.timestamp)}
@@ -828,6 +1098,29 @@ export default function WebSocketChat() {
                               </span>
                             )}
                             <p className="text-sm break-words">{msg.content}</p>
+                            {msg.file && (
+                              <div className="mt-2 p-2 bg-black/20 rounded-lg">
+                                {msg.file.type.startsWith('image/') ? (
+                                  <img src={msg.file.data} alt={msg.file.name} className="max-w-full rounded max-h-48" />
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <File className="w-8 h-8 text-slate-400" />
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-xs truncate">{msg.file.name}</p>
+                                      <p className="text-xs text-slate-400">{formatFileSize(msg.file.size)}</p>
+                                    </div>
+                                  </div>
+                                )}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => downloadFile(msg.file!)}
+                                  className="mt-2 w-full text-xs"
+                                >
+                                  <Download className="w-3 h-3 mr-1" /> Download
+                                </Button>
+                              </div>
+                            )}
                           </div>
                           <span className="text-xs text-slate-500 mt-1 block">
                             {formatTime(msg.timestamp)}
@@ -847,10 +1140,54 @@ export default function WebSocketChat() {
                 {Array.from(typingUsers).join(', ')} {typingUsers.size === 1 ? 'is' : 'are'} typing...
               </div>
             )}
+
+            {/* File Preview */}
+            {selectedFile && (
+              <div className="px-4 py-2 border-t border-slate-700 bg-slate-700/30">
+                <div className="flex items-center gap-2">
+                  {filePreview ? (
+                    <img src={filePreview} alt="Preview" className="w-12 h-12 object-cover rounded" />
+                  ) : (
+                    <div className="w-12 h-12 bg-slate-600 rounded flex items-center justify-center">
+                      <File className="w-6 h-6 text-slate-400" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white truncate">{selectedFile.name}</p>
+                    <p className="text-xs text-slate-400">{formatFileSize(selectedFile.size)}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearSelectedFile}
+                    className="text-slate-400 hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
             
             {/* Input */}
             <div className="p-4 border-t border-slate-700">
               <div className="flex gap-2">
+                {/* File Upload */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-slate-400 hover:text-white shrink-0"
+                  title="Attach file (max 10MB)"
+                >
+                  <Paperclip className="w-5 h-5" />
+                </Button>
+
                 {/* Emoji Picker */}
                 <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
                   <PopoverTrigger asChild>
@@ -915,7 +1252,7 @@ export default function WebSocketChat() {
                 />
                 <Button
                   onClick={sendMessage}
-                  disabled={!inputMessage.trim() || !isConnected}
+                  disabled={(!inputMessage.trim() && !selectedFile) || !isConnected}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
                   <Send className="w-4 h-4" />
@@ -933,7 +1270,6 @@ export default function WebSocketChat() {
           size="lg"
           className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg"
           onClick={() => {
-            // Could add a mobile drawer for users
             setSelectedPrivateUser(null)
           }}
         >
@@ -941,6 +1277,79 @@ export default function WebSocketChat() {
           {users.length}
         </Button>
       </div>
+
+      {/* Settings Dialog */}
+      <Dialog open={showSettings} onOpenChange={setShowSettings}>
+        <DialogContent className="bg-slate-800 border-slate-700 text-white">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings className="w-5 h-5" /> Settings
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Customize your chat experience
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-white flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-emerald-400" />
+                  Profanity Filter
+                </Label>
+                <p className="text-xs text-slate-400">
+                  Filter inappropriate language (ON by default)
+                </p>
+              </div>
+              <Switch
+                checked={settings.profanityFilter}
+                onCheckedChange={(checked) => setSettings(prev => ({ ...prev, profanityFilter: checked }))}
+              />
+            </div>
+            
+            <Separator className="bg-slate-700" />
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-white flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-emerald-400" />
+                  Show General Location
+                </Label>
+                <p className="text-xs text-slate-400">
+                  Show country/region only (no addresses)
+                </p>
+              </div>
+              <Switch
+                checked={settings.showLocation}
+                onCheckedChange={(checked) => setSettings(prev => ({ ...prev, showLocation: checked }))}
+              />
+            </div>
+
+            {settings.profanityFilter && (
+              <>
+                <Separator className="bg-slate-700" />
+                <div className="flex items-center gap-2 p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                  <Shield className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <p className="text-xs text-emerald-300">
+                    Profanity filter is ON. Inappropriate words will be replaced with ****
+                  </p>
+                </div>
+              </>
+            )}
+
+            {!settings.profanityFilter && (
+              <>
+                <Separator className="bg-slate-700" />
+                <div className="flex items-center gap-2 p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                  <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+                  <p className="text-xs text-amber-300">
+                    Profanity filter is OFF. You may see unfiltered content.
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

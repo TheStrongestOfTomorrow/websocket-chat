@@ -10,6 +10,7 @@ const io = new Server(httpServer, {
   },
   pingTimeout: 60000,
   pingInterval: 25000,
+  maxHttpBufferSize: 20e6 // 20MB for file uploads
 })
 
 interface User {
@@ -26,6 +27,13 @@ interface Room {
   createdAt: Date
 }
 
+interface FileAttachment {
+  name: string
+  type: string
+  size: number
+  data: string
+}
+
 interface Message {
   id: string
   from: string
@@ -34,6 +42,36 @@ interface Message {
   timestamp: Date
   type: 'public' | 'private' | 'system'
   roomId: string
+  file?: FileAttachment
+}
+
+// Address/Location patterns to detect and warn about
+const ADDRESS_PATTERNS = [
+  // Street address patterns
+  /\d+\s+[a-zA-Z\s]+(?:street|st|avenue|ave|road|rd|drive|dr|lane|ln|boulevard|blvd|way|court|ct|place|pl|circle|cir)/gi,
+  // Zip code patterns (US)
+  /\b\d{5}(-\d{4})?\b/g,
+  // UK postcodes
+  /\b[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}\b/gi,
+  // Coordinate patterns
+  /\b-?\d{1,3}\.\d+,\s*-?\d{1,3}\.\d+\b/g,
+  // "I live at" or "my address" patterns
+  /(?:i live at|my address is|my address|i live on|my house is at|my home is at)/gi,
+  // Phone numbers
+  /\b(?:\+?1[-.]?)?\(?\d{3}\)?[-.]?\d{3}[-.]?\d{4}\b/g
+]
+
+// Check if message contains address-like content
+const containsAddressInfo = (content: string): { hasAddress: boolean; warning?: string } => {
+  for (const pattern of ADDRESS_PATTERNS) {
+    if (pattern.test(content)) {
+      return {
+        hasAddress: true,
+        warning: '⚠️ Your message appears to contain address/location information. For safety, please only share general location (country/region).'
+      }
+    }
+  }
+  return { hasAddress: false }
 }
 
 // Storage
@@ -171,31 +209,39 @@ io.on('connection', (socket) => {
   })
 
   // Send message to room
-  socket.on('send-message', (data: { content: string }) => {
+  socket.on('send-message', (data: { content: string; file?: FileAttachment }) => {
     const user = users.get(socket.id)
     if (!user) {
       socket.emit('error', { message: 'You are not in a room.' })
       return
     }
     
-    const { content } = data
+    const { content, file } = data
+    
+    // Check for address information in text content
+    const addressCheck = containsAddressInfo(content)
+    if (addressCheck.hasAddress) {
+      socket.emit('warning', { message: addressCheck.warning })
+    }
+    
     const message: Message = {
       id: generateMessageId(),
       from: user.username,
       content,
       timestamp: new Date(),
       type: 'public',
-      roomId: user.roomId
+      roomId: user.roomId,
+      file
     }
     
-    console.log(`[Message] ${user.username} in room ${user.roomId}: ${content}`)
+    console.log(`[Message] ${user.username} in room ${user.roomId}: ${content}${file ? ` [File: ${file.name}]` : ''}`)
     
     // Broadcast to everyone in the room including sender
     io.to(user.roomId).emit('message', message)
   })
 
   // Send private message
-  socket.on('send-private-message', (data: { toUserId: string; content: string }) => {
+  socket.on('send-private-message', (data: { toUserId: string; content: string; file?: FileAttachment }) => {
     const sender = users.get(socket.id)
     const recipient = users.get(data.toUserId)
     
@@ -204,17 +250,26 @@ io.on('connection', (socket) => {
       return
     }
     
+    const { content, file } = data
+    
+    // Check for address information
+    const addressCheck = containsAddressInfo(content)
+    if (addressCheck.hasAddress) {
+      socket.emit('warning', { message: addressCheck.warning })
+    }
+    
     const message: Message = {
       id: generateMessageId(),
       from: sender.username,
       to: recipient.username,
-      content: data.content,
+      content,
       timestamp: new Date(),
       type: 'private',
-      roomId: sender.roomId
+      roomId: sender.roomId,
+      file
     }
     
-    console.log(`[Private] ${sender.username} -> ${recipient.username}: ${data.content}`)
+    console.log(`[Private] ${sender.username} -> ${recipient.username}: ${content}${file ? ` [File: ${file.name}]` : ''}`)
     
     // Send to recipient
     io.to(data.toUserId).emit('private-message', { 
@@ -328,6 +383,7 @@ const PORT = 3003
 httpServer.listen(PORT, () => {
   console.log(`[Server] WebSocket Chat Server running on port ${PORT}`)
   console.log(`[Server] Ready for connections!`)
+  console.log(`[Server] Features: File uploads (up to 20MB), Address detection`)
 })
 
 // Graceful shutdown

@@ -26,12 +26,14 @@ A modern, real-time peer-to-peer chat application built with **Next.js 16**, **S
 | Feature | Description |
 |---------|-------------|
 | **Real-time Chat** | Messages are delivered instantly to all users in the room via WebSocket |
+| **File Uploads** | Share any file (images, documents, videos) up to 10MB! Just click the attachment button 📎 |
 | **Emoji Support** | Full emoji picker built into the chat! Express yourself with emojis 🎉😊❤️ |
 | **Private Messages** | Click on any user in the sidebar to send them a private message (shown in purple) |
 | **Group Chats** | When multiple friends join, a group chat is automatically formed. Switch between group chat and private conversations easily |
 | **Typing Indicators** | See when other users are typing with real-time indicators |
 | **System Messages** | Automatic notifications when users join or leave the room |
 | **Message Timestamps** | Each message shows the time it was sent |
+| **Image Previews** | Images are displayed inline with click-to-download support |
 
 ### 👥 Session & User Management
 | Feature | Description |
@@ -40,6 +42,8 @@ A modern, real-time peer-to-peer chat application built with **Next.js 16**, **S
 | **Session Sidebar** | See all active users in the session with their usernames displayed |
 | **Quick Private Chat** | Click any username in the sidebar to start a private conversation |
 | **User Avatars** | Colorful avatars with initials for easy identification |
+| **Profanity Filter** | Filter inappropriate language (ON by default). Toggle in Settings |
+| **Location Safety** | Address/street detection warns users to only share general location (country/region) |
 
 ### 🎨 User Interface
 | Feature | Description |
@@ -50,6 +54,8 @@ A modern, real-time peer-to-peer chat application built with **Next.js 16**, **S
 | **Connection Status** | Visual indicator showing WebSocket connection state |
 | **Copy Room Code** | One-click copy button for sharing room codes |
 | **Saved Codes List** | Quick access to your previously used room codes |
+| **Settings Dialog** | Customize profanity filter and other preferences |
+| **Filter Status Badge** | Shows if profanity filter is ON/OFF in header |
 
 ---
 
@@ -106,6 +112,22 @@ See the [How to Run Locally](#-how-to-run-locally) section below.
 2. Select an emoji from the picker
 3. The emoji will be inserted into your message
 4. Send and express yourself! 🎉
+
+### Uploading Files
+1. Click the attachment button (📎) next to the emoji button
+2. Select any file (images, documents, videos - up to 10MB)
+3. Images will show a preview before sending
+4. Click Send to share with everyone!
+5. Recipients can click to download the file
+
+### Settings & Safety
+1. Click the Settings (⚙️) button in the header or landing page
+2. **Profanity Filter**: Toggle ON/OFF (ON by default)
+   - When ON: Inappropriate words are replaced with ****
+   - When OFF: Warning is shown about unfiltered content
+3. **Location Safety**: System automatically detects and warns about address sharing
+   - Only share general location (country/region)
+   - Street addresses, zip codes, coordinates are detected and warned
 
 ### Group Chat vs Private Messages
 - **Group Chat** (default): Messages are visible to everyone in the room
@@ -305,6 +327,23 @@ To test the chat functionality:
 
 ### Testing New Features
 
+**File Uploads:**
+- Click the 📎 attachment button in the chat input
+- Select any file (up to 10MB)
+- Images show a preview before sending
+- Files are sent and displayed in chat with download option
+
+**Profanity Filter:**
+- ON by default - bad words become ****
+- Click Settings (⚙️) to toggle OFF
+- Badge shows "Filter ON" in header when active
+
+**Location Safety:**
+- Try typing an address like "123 Main Street"
+- System will warn you to only share general location
+- Safe: "I'm from California" or "I live in Canada"
+- Unsafe: Full addresses, zip codes, coordinates
+
 **Code Persistence:**
 - Create a room and join it
 - Refresh the page
@@ -330,6 +369,9 @@ To test the chat functionality:
 | Messages not sending | Check browser console for errors, ensure both servers are running |
 | Saved codes not appearing | Check if localStorage is enabled in your browser |
 | Emojis not showing | Ensure your browser supports Unicode emojis |
+| File too large error | Maximum file size is 10MB - try a smaller file |
+| Profanity filter not working | Check Settings to ensure filter is toggled ON |
+| Location warning not appearing | Warning only triggers for detected address patterns |
 
 ### Port Configuration
 
