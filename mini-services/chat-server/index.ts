@@ -45,33 +45,98 @@ interface Message {
   file?: FileAttachment
 }
 
-// Address/Location patterns to detect and warn about
+// Address/Location patterns to detect and BLOCK for user safety
+// These patterns detect SPECIFIC addresses, not general locations like country/state
 const ADDRESS_PATTERNS = [
-  // Street address patterns
-  /\d+\s+[a-zA-Z\s]+(?:street|st|avenue|ave|road|rd|drive|dr|lane|ln|boulevard|blvd|way|court|ct|place|pl|circle|cir)/gi,
-  // Zip code patterns (US)
-  /\b\d{5}(-\d{4})?\b/g,
-  // UK postcodes
-  /\b[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}\b/gi,
-  // Coordinate patterns
-  /\b-?\d{1,3}\.\d+,\s*-?\d{1,3}\.\d+\b/g,
-  // "I live at" or "my address" patterns
-  /(?:i live at|my address is|my address|i live on|my house is at|my home is at)/gi,
-  // Phone numbers
-  /\b(?:\+?1[-.]?)?\(?\d{3}\)?[-.]?\d{3}[-.]?\d{4}\b/g
+  // Street address patterns (e.g., "123 Main Street", "456 Oak Ave")
+  /\d+\s+[a-zA-Z]+\s+(?:street|st|avenue|ave|road|rd|drive|dr|lane|ln|boulevard|blvd|way|court|ct|place|pl|circle|cir|terrace|ter|parkway|pkwy|highway|hwy)/gi,
+  // Apartment/Unit numbers (e.g., "Apt 4B", "Unit 12")
+  /(?:apartment|apt|unit|suite|ste|room|rm|#)\s*[a-zA-Z0-9]+/gi,
+  // US ZIP codes (5 digits or ZIP+4)
+  /\b\d{5}(?:[-\s]\d{4})?\b/g,
+  // UK postcodes (e.g., "SW1A 1AA", "M1 1AA")
+  /\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b/gi,
+  // Canadian postal codes (e.g., "K1A 0B1")
+  /\b[A-Z]\d[A-Z]\s*\d[A-Z]\d\b/gi,
+  // GPS Coordinates (e.g., "40.7128, -74.0060")
+  /\b-?\d{1,3}\.\d{4,},\s*-?\d{1,3}\.\d{4,}\b/g,
+  // "I live at" / "my address" patterns (explicit sharing)
+  /\b(?:i\s+(?:live|stay|reside)\s+(?:at|on|in\s+the\s+(?:house|apartment|building))\s+\d)/gi,
+  /\b(?:my\s+(?:address|home|house|location)\s+(?:is|at))\s+\d/gi,
+  // Phone numbers (US/International)
+  /\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g,
+  // International phone patterns
+  /\b\+?\d{1,3}[-.\s]?\d{2,4}[-.\s]?\d{3,4}[-.\s]?\d{3,4}\b/g,
+  // Building numbers with street names (e.g., "building 5 on Main")
+  /(?:building|bldg)\s*\d+\s+(?:on|at|near)/gi,
 ]
 
-// Check if message contains address-like content
-const containsAddressInfo = (content: string): { hasAddress: boolean; warning?: string } => {
-  for (const pattern of ADDRESS_PATTERNS) {
-    if (pattern.test(content)) {
-      return {
-        hasAddress: true,
-        warning: '⚠️ Your message appears to contain address/location information. For safety, please only share general location (country/region).'
+// Words that indicate GENERAL location (ALLOWED - these are safe)
+const ALLOWED_LOCATION_WORDS = [
+  // Countries
+  'usa', 'united states', 'america', 'uk', 'united kingdom', 'england', 'scotland', 'wales', 
+  'canada', 'australia', 'new zealand', 'germany', 'france', 'spain', 'italy', 'japan', 
+  'china', 'india', 'brazil', 'mexico', 'russia', 'south korea', 'korea', 'indonesia',
+  'philippines', 'vietnam', 'thailand', 'singapore', 'malaysia', 'netherlands', 'belgium',
+  'sweden', 'norway', 'denmark', 'finland', 'poland', 'portugal', 'greece', 'turkey',
+  'south africa', 'egypt', 'nigeria', 'kenya', 'israel', 'saudi arabia', 'uae', 'dubai',
+  'argentina', 'chile', 'colombia', 'peru', 'pakistan', 'bangladesh', 'iran', 'iraq',
+  // Continents/Regions
+  'europe', 'asia', 'africa', 'north america', 'south america', 'oceania', 'antarctica',
+  'middle east', 'southeast asia', 'central america', 'caribbean', 'pacific', 'atlantic',
+  'east', 'west', 'north', 'south', 'northern', 'southern', 'eastern', 'western',
+  // States/Provinces (general mentions without specific address)
+  'california', 'texas', 'florida', 'new york', 'london', 'paris', 'tokyo', 'sydney',
+  'melbourne', 'toronto', 'vancouver', 'berlin', 'amsterdam', 'barcelona', 'madrid',
+  'rome', 'milan', 'munich', 'zurich', 'vienna', 'prague', 'dublin', 'edinburgh',
+  'mumbai', 'delhi', 'bangalore', 'shanghai', 'beijing', 'hong kong', 'seoul', 'bangkok',
+  'los angeles', 'chicago', 'houston', 'phoenix', 'seattle', 'denver', 'boston', 'atlanta',
+  'miami', 'dallas', 'san francisco', 'san diego', 'austin', 'las vegas', 'portland',
+  // General location words
+  'state', 'province', 'region', 'country', 'area', 'zone', 'district', 'county',
+  'nearby', 'local', 'around here', 'my area', 'my city', 'my town', 'my country',
+]
+
+// Check if message contains blocked address information
+// Returns: hasAddress (true = blocked), warning message, isAllowedGeneralLocation
+const containsAddressInfo = (content: string): { hasAddress: boolean; warning?: string; isBlocked: boolean } => {
+  const lowerContent = content.toLowerCase()
+  
+  // First check if it's just a general location mention (ALLOWED)
+  for (const allowed of ALLOWED_LOCATION_WORDS) {
+    if (lowerContent.includes(allowed)) {
+      // Check if there's ALSO specific address info with it
+      let hasSpecificAddress = false
+      for (const pattern of ADDRESS_PATTERNS) {
+        // Reset lastIndex for regex
+        pattern.lastIndex = 0
+        if (pattern.test(content)) {
+          hasSpecificAddress = true
+          break
+        }
+      }
+      
+      if (!hasSpecificAddress) {
+        // Just general location - ALLOW
+        return { hasAddress: false, isBlocked: false }
       }
     }
   }
-  return { hasAddress: false }
+  
+  // Check for blocked patterns
+  for (const pattern of ADDRESS_PATTERNS) {
+    // Reset lastIndex for regex
+    pattern.lastIndex = 0
+    if (pattern.test(content)) {
+      return {
+        hasAddress: true,
+        isBlocked: true,
+        warning: '🚫 BLOCKED: For your safety, sharing specific addresses, phone numbers, or exact locations is not allowed. You can share general location like country, state, or region only.'
+      }
+    }
+  }
+  
+  return { hasAddress: false, isBlocked: false }
 }
 
 // Storage
@@ -218,10 +283,15 @@ io.on('connection', (socket) => {
     
     const { content, file } = data
     
-    // Check for address information in text content
+    // Check for address information in text content - BLOCK if found
     const addressCheck = containsAddressInfo(content)
-    if (addressCheck.hasAddress) {
-      socket.emit('warning', { message: addressCheck.warning })
+    if (addressCheck.isBlocked) {
+      console.log(`[BLOCKED] ${user.username} tried to share address info: ${content.substring(0, 50)}...`)
+      socket.emit('message-blocked', { 
+        reason: addressCheck.warning,
+        originalContent: content
+      })
+      return // DO NOT send the message
     }
     
     const message: Message = {
@@ -252,10 +322,15 @@ io.on('connection', (socket) => {
     
     const { content, file } = data
     
-    // Check for address information
+    // Check for address information - BLOCK if found
     const addressCheck = containsAddressInfo(content)
-    if (addressCheck.hasAddress) {
-      socket.emit('warning', { message: addressCheck.warning })
+    if (addressCheck.isBlocked) {
+      console.log(`[BLOCKED] ${sender.username} tried to share address info in private: ${content.substring(0, 50)}...`)
+      socket.emit('message-blocked', { 
+        reason: addressCheck.warning,
+        originalContent: content
+      })
+      return // DO NOT send the message
     }
     
     const message: Message = {

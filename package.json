@@ -1,7 +1,10 @@
 {
-  "name": "nextjs_tailwind_shadcn_ts",
-  "version": "0.2.0",
+  "name": "websocket-chat",
+  "version": "1.0.0",
   "private": true,
+  "description": "Real-time WebSocket Chat Application with mobile and desktop support",
+  "author": "WebSocket Chat Team",
+  "license": "MIT",
   "scripts": {
     "dev": "next dev -p 3000 2>&1 | tee dev.log",
     "build": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",
@@ -10,7 +13,16 @@
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:reset": "prisma migrate reset"
+    "db:reset": "prisma migrate reset",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "cap:init": "cap init",
+    "cap:add:android": "cap add android",
+    "cap:add:ios": "cap add ios",
+    "cap:sync": "cap sync",
+    "android:build": "cd android && ./gradlew assembleDebug",
+    "android:release": "cd android && ./gradlew assembleRelease"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

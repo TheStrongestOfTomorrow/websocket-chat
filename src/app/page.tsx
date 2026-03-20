@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { 
   MessageCircle, 
   Users, 
@@ -107,17 +108,6 @@ const USER_SETTINGS_KEY = 'websocket-chat-user-settings'
 // Max file size: 10MB
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
-// Helper function to load from localStorage (used for lazy initialization)
-const loadFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
-  if (typeof window === 'undefined') return defaultValue
-  try {
-    const item = localStorage.getItem(key)
-    return item ? JSON.parse(item) : defaultValue
-  } catch {
-    return defaultValue
-  }
-}
-
 // Filter profanity from text
 const filterProfanity = (text: string): string => {
   let filtered = text
@@ -143,7 +133,9 @@ const getFileIcon = (type: string) => {
 
 export default function WebSocketChat() {
   const [view, setView] = useState<AppView>('landing')
-  const [username, setUsername] = useState(() => loadFromLocalStorage(LAST_USERNAME_KEY, ''))
+  // Initialize with empty/default values to avoid hydration mismatch
+  // localStorage values will be loaded in useEffect after mount
+  const [username, setUsername] = useState('')
   const [roomCode, setRoomCode] = useState('')
   const [joinCode, setJoinCode] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
@@ -155,16 +147,17 @@ export default function WebSocketChat() {
   const [copied, setCopied] = useState(false)
   const [selectedPrivateUser, setSelectedPrivateUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [savedRooms, setSavedRooms] = useState<SavedRoom[]>(() => loadFromLocalStorage(SAVED_ROOMS_KEY, []))
+  const [savedRooms, setSavedRooms] = useState<SavedRoom[]>([])
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [emojiCategory, setEmojiCategory] = useState<keyof typeof EMOJI_CATEGORIES>('Smileys')
-  const [settings, setSettings] = useState<UserSettings>(() => loadFromLocalStorage(USER_SETTINGS_KEY, {
-    profanityFilter: true,
+  const [settings, setSettings] = useState<UserSettings>({
+    profanityFilter: false,  // OFF by default - user can enable in settings
     showLocation: false
-  }))
+  })
   const [showSettings, setShowSettings] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [filePreview, setFilePreview] = useState<string | null>(null)
+  const [mobileUsersOpen, setMobileUsersOpen] = useState(false)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -181,6 +174,33 @@ export default function WebSocketChat() {
   useEffect(() => {
     scrollToBottom()
   }, [messages, scrollToBottom])
+
+  // Load saved data from localStorage after mount (avoids hydration mismatch)
+  // This is the recommended pattern for client-side only state initialization
+  useEffect(() => {
+    try {
+      // Load username
+      const savedUsername = localStorage.getItem(LAST_USERNAME_KEY)
+      if (savedUsername) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setUsername(savedUsername)
+      }
+      
+      // Load saved rooms
+      const savedRoomsData = localStorage.getItem(SAVED_ROOMS_KEY)
+      if (savedRoomsData) {
+        setSavedRooms(JSON.parse(savedRoomsData))
+      }
+      
+      // Load settings
+      const savedSettings = localStorage.getItem(USER_SETTINGS_KEY)
+      if (savedSettings) {
+        setSettings(JSON.parse(savedSettings))
+      }
+    } catch (e) {
+      console.error('Failed to load saved data:', e)
+    }
+  }, [])
 
   // Save settings to localStorage
   useEffect(() => {
@@ -389,6 +409,15 @@ export default function WebSocketChat() {
         title: 'Error',
         description: data.message,
         variant: 'destructive'
+      })
+    })
+
+    socketInstance.on('message-blocked', (data: { reason: string; originalContent: string }) => {
+      toast({
+        title: '🚫 Message Blocked',
+        description: data.reason,
+        variant: 'destructive',
+        duration: 6000
       })
     })
 
@@ -777,7 +806,7 @@ export default function WebSocketChat() {
                     Profanity Filter
                   </Label>
                   <p className="text-xs text-slate-400">
-                    Filter inappropriate language (ON by default)
+                    Filter inappropriate language (OFF by default)
                   </p>
                 </div>
                 <Switch
@@ -870,6 +899,95 @@ export default function WebSocketChat() {
             </div>
             
             <div className="flex items-center gap-2">
+              {/* Mobile Users Button */}
+              <Sheet open={mobileUsersOpen} onOpenChange={setMobileUsersOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="md:hidden bg-slate-700/50 border-slate-600 text-white"
+                  >
+                    <Users className="w-4 h-4 mr-1" />
+                    <span className="text-xs">{users.length}</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="bg-slate-800 border-slate-700 text-white w-72">
+                  <SheetHeader>
+                    <SheetTitle className="text-white flex items-center gap-2">
+                      <Users className="w-4 h-4 text-emerald-400" />
+                      Session Users ({users.length})
+                    </SheetTitle>
+                    <SheetDescription className="text-slate-400">
+                      Tap a user for private chat
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="mt-4 space-y-1">
+                    {/* Everyone (Group Chat) */}
+                    <div
+                      className={`flex items-center gap-2 p-3 rounded-lg transition-colors cursor-pointer ${
+                        selectedPrivateUser === null ? 'bg-emerald-500/20 border border-emerald-500/30' : 'hover:bg-slate-700/50'
+                      }`}
+                      onClick={() => {
+                        setSelectedPrivateUser(null)
+                        setMobileUsersOpen(false)
+                      }}
+                    >
+                      <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center">
+                        <MessageSquare className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white">Everyone</p>
+                        <p className="text-xs text-slate-400">Group Chat</p>
+                      </div>
+                    </div>
+                    
+                    <Separator className="my-2 bg-slate-700" />
+                    
+                    {/* Users List */}
+                    {users.map((user) => (
+                      <div
+                        key={user.id}
+                        className={`flex items-center gap-2 p-3 rounded-lg transition-colors cursor-pointer ${
+                          selectedPrivateUser?.id === user.id ? 'bg-purple-500/20 border border-purple-500/30' : 'hover:bg-slate-700/50'
+                        } ${user.username === username ? 'bg-slate-700/30' : ''}`}
+                        onClick={() => {
+                          if (user.username !== username) {
+                            setSelectedPrivateUser(user)
+                            setMobileUsersOpen(false)
+                          }
+                        }}
+                      >
+                        <Avatar className="w-10 h-10">
+                          <AvatarFallback className={`text-sm font-semibold ${
+                            user.username === username 
+                              ? 'bg-emerald-600 text-white' 
+                              : 'bg-slate-600 text-slate-200'
+                          }`}>
+                            {user.username.substring(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-white truncate">
+                            {user.username}
+                            {user.username === username && ' (you)'}
+                          </p>
+                          <div className="flex items-center gap-1">
+                            {user.username === username && isHost && (
+                              <Badge className="bg-amber-500/20 text-amber-400 text-[10px] px-1 py-0">
+                                <Crown className="w-2 h-2 mr-0.5" /> Host
+                              </Badge>
+                            )}
+                            {user.username !== username && (
+                              <span className="text-xs text-purple-400">Tap to chat privately</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </SheetContent>
+              </Sheet>
+              
               {settings.profanityFilter && (
                 <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs hidden sm:flex">
                   <Shield className="w-3 h-3 mr-1" /> Filter ON

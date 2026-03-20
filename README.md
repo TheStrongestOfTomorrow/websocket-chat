@@ -9,6 +9,35 @@ A modern, real-time peer-to-peer chat application built with **Next.js 16**, **S
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)
 ![Socket.io](https://img.shields.io/badge/Socket.io-4-white?style=for-the-badge&logo=socket.io)
 
+### 📱 Platform Support
+![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
+![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+![macOS](https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=macos&logoColor=white) *(coming soon)*
+![iOS](https://img.shields.io/badge/iOS-000000?style=for-the-badge&logo=ios&logoColor=white) *(coming soon)*
+
+---
+
+## 📥 Download Apps
+
+### Desktop Apps (Windows & Linux)
+Download the latest release from [GitHub Releases](https://github.com/TheStrongestOfTomorrow/websocket-chat/releases):
+
+| Platform | Format | Notes |
+|----------|--------|-------|
+| **Windows** | `.exe` (NSIS) | Standalone installer |
+| **Windows** | `.msi` | MSI installer for enterprise deployment |
+| **Linux (Debian/Ubuntu)** | `.deb` | Debian package |
+| **Linux (Fedora/RHEL)** | `.rpm` | RPM package |
+| **Linux (Universal)** | `.AppImage` | Portable, no installation required |
+
+### Mobile App (Android)
+Download the APK from [GitHub Releases](https://github.com/TheStrongestOfTomorrow/websocket-chat/releases):
+- **Android**: `.apk` file - Enable "Install from unknown sources" in settings
+
+### Use Web Version
+No download needed! Visit **[https://socket-chat.space.z.ai](https://socket-chat.space.z.ai)** in any modern browser.
+
 ---
 
 ## ✨ Features
@@ -42,8 +71,17 @@ A modern, real-time peer-to-peer chat application built with **Next.js 16**, **S
 | **Session Sidebar** | See all active users in the session with their usernames displayed |
 | **Quick Private Chat** | Click any username in the sidebar to start a private conversation |
 | **User Avatars** | Colorful avatars with initials for easy identification |
-| **Profanity Filter** | Filter inappropriate language (ON by default). Toggle in Settings |
-| **Location Safety** | Address/street detection warns users to only share general location (country/region) |
+| **Profanity Filter** | Filter inappropriate language (OFF by default). Toggle in Settings to enable |
+| **Address Blocking** | For user safety, specific addresses are BLOCKED. Only general location (country/state/region) allowed |
+
+### 📱 Mobile Support
+| Feature | Description |
+|---------|-------------|
+| **Responsive Design** | Fully optimized for mobile screens |
+| **Touch-Friendly UI** | Large tap targets and swipe gestures |
+| **Mobile Users Drawer** | Slide-out drawer to view users and start private chats |
+| **Portrait & Landscape** | Works in both orientations |
+| **Native Feel** | PWA-ready for "Add to Home Screen" |
 
 ### 🎨 User Interface
 | Feature | Description |
@@ -70,18 +108,29 @@ A modern, real-time peer-to-peer chat application built with **Next.js 16**, **S
 | **Tailwind CSS 4** | Utility-first CSS framework |
 | **shadcn/ui** | Beautiful, accessible UI components |
 | **Bun** | Fast JavaScript runtime |
+| **Tauri 2** | Cross-platform desktop apps (Windows, Linux, macOS) |
+| **Capacitor** | Cross-platform mobile apps (Android, iOS) |
 
 ---
 
 ## 🚀 Quick Start
 
-### Option 1: Use the Live Demo
+### Option 1: Download Native Apps
+- **Desktop**: Download from [GitHub Releases](https://github.com/TheStrongestOfTomorrow/websocket-chat/releases)
+- **Android**: Download APK from [GitHub Releases](https://github.com/TheStrongestOfTomorrow/websocket-chat/releases)
+
+### Option 2: Use the Live Demo
 **🔗 [https://socket-chat.space.z.ai](https://socket-chat.space.z.ai)**
 
 Visit the live demo and start chatting immediately!
 
-### Option 2: Run Locally
-See the [How to Run Locally](#-how-to-run-locally) section below.
+### Option 3: Run Locally
+See the **[HOSTING.md](./HOSTING.md)** for comprehensive guides on:
+- 🖥️ Local development (Bun, npm, Docker, PM2)
+- ☁️ Production hosting (Vercel, Railway, DigitalOcean, AWS, Heroku, Render)
+- 🔧 Detailed environment configuration
+- 🛠️ Troubleshooting common issues
+- 🔒 Security considerations
 
 ---
 
@@ -122,12 +171,13 @@ See the [How to Run Locally](#-how-to-run-locally) section below.
 
 ### Settings & Safety
 1. Click the Settings (⚙️) button in the header or landing page
-2. **Profanity Filter**: Toggle ON/OFF (ON by default)
+2. **Profanity Filter**: Toggle ON/OFF (OFF by default)
    - When ON: Inappropriate words are replaced with ****
-   - When OFF: Warning is shown about unfiltered content
-3. **Location Safety**: System automatically detects and warns about address sharing
-   - Only share general location (country/region)
-   - Street addresses, zip codes, coordinates are detected and warned
+   - When OFF: You see content as-is
+3. **Address Blocking** (automatic): For your safety, specific addresses are BLOCKED
+   - ✅ ALLOWED: "I'm from California", "I live in Canada", "I'm in Europe"
+   - 🚫 BLOCKED: Street addresses, zip codes, phone numbers, coordinates
+   - Blocked messages show an error and are NOT sent
 
 ### Group Chat vs Private Messages
 - **Group Chat** (default): Messages are visible to everyone in the room
@@ -164,10 +214,19 @@ websocket-chat/
 │   └── 📁 chat-server/
 │       ├── index.ts          # Socket.io WebSocket server
 │       └── package.json      # Server dependencies
+├── 📁 src-tauri/             # Tauri desktop app config
+│   ├── src/main.rs           # Rust entry point
+│   ├── Cargo.toml            # Rust dependencies
+│   └── tauri.conf.json       # Tauri configuration
+├── 📁 .github/workflows/     # GitHub Actions CI/CD
+│   └── build-apps.yml        # Build desktop & mobile apps
 ├── 📁 src/components/ui/     # shadcn/ui components
 ├── 📁 src/hooks/             # Custom React hooks
+├── capacitor.config.json     # Capacitor mobile config
 ├── package.json              # Main dependencies
 ├── tailwind.config.ts        # Tailwind configuration
+├── HOSTING.md                # Comprehensive hosting guide
+├── CONTRIBUTING.md           # Contribution guidelines
 └── README.md                 # This file
 ```
 
@@ -206,6 +265,7 @@ No environment variables are required for basic usage. The app uses local WebSoc
 | `user-left` | `{ userId, username }` | User left notification |
 | `user-typing` | `{ username }` | User is typing |
 | `user-stop-typing` | `{ username }` | User stopped typing |
+| `message-blocked` | `{ reason, originalContent }` | Message blocked for safety (address detection) |
 | `error` | `{ message }` | Error notification |
 
 ---
@@ -334,15 +394,17 @@ To test the chat functionality:
 - Files are sent and displayed in chat with download option
 
 **Profanity Filter:**
-- ON by default - bad words become ****
-- Click Settings (⚙️) to toggle OFF
+- OFF by default - content shown as-is
+- Click Settings (⚙️) to toggle ON
+- When ON, bad words become ****
 - Badge shows "Filter ON" in header when active
 
-**Location Safety:**
+**Address Blocking (Safety Feature):**
 - Try typing an address like "123 Main Street"
-- System will warn you to only share general location
-- Safe: "I'm from California" or "I live in Canada"
-- Unsafe: Full addresses, zip codes, coordinates
+- Message will be BLOCKED and not sent
+- ✅ Safe: "I'm from California" or "I live in Canada"
+- 🚫 Blocked: Full addresses, zip codes, phone numbers, coordinates
+- This protects users from accidentally sharing personal info
 
 **Code Persistence:**
 - Create a room and join it
@@ -371,7 +433,7 @@ To test the chat functionality:
 | Emojis not showing | Ensure your browser supports Unicode emojis |
 | File too large error | Maximum file size is 10MB - try a smaller file |
 | Profanity filter not working | Check Settings to ensure filter is toggled ON |
-| Location warning not appearing | Warning only triggers for detected address patterns |
+| Message blocked as address | You tried to share specific location info - use general location only (country/state) |
 
 ### Port Configuration
 
