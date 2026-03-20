@@ -14,19 +14,30 @@ A modern, real-time peer-to-peer chat application built with **Next.js 16**, **S
 ### 🏠 Room Management
 | Feature | Description |
 |---------|-------------|
-| **Create Rooms** | Host a WebSocket chat room with a single click. A unique 6-character room code is generated automatically (e.g., `A3K7XM`) |
+| **Create Rooms** | Host a WebSocket chat room with a unique 6-character room code (e.g., `A3K7XM`) |
 | **Join Rooms** | Enter a friend's room code to instantly join their chat room |
 | **Host Badge** | Room creators are marked with a crown badge (👑) for easy identification |
 | **Host Transfer** | If the host leaves, host privileges are automatically transferred to another user |
+| **Code Persistence** | Room codes are saved locally! Use your saved codes or enter previous codes like "yesterday's code" without asking the host again |
 
 ### 💬 Messaging
 | Feature | Description |
 |---------|-------------|
 | **Real-time Chat** | Messages are delivered instantly to all users in the room via WebSocket |
+| **Emoji Support** | Full emoji picker built into the chat! Express yourself with emojis 🎉😊❤️ |
 | **Private Messages** | Click on any user in the sidebar to send them a private message (shown in purple) |
+| **Group Chats** | When multiple friends join, a group chat is automatically formed. Switch between group chat and private conversations easily |
 | **Typing Indicators** | See when other users are typing with real-time indicators |
 | **System Messages** | Automatic notifications when users join or leave the room |
 | **Message Timestamps** | Each message shows the time it was sent |
+
+### 👥 Session & User Management
+| Feature | Description |
+|---------|-------------|
+| **Custom Usernames** | New users can create their own unique username when joining |
+| **Session Sidebar** | See all active users in the session with their usernames displayed |
+| **Quick Private Chat** | Click any username in the sidebar to start a private conversation |
+| **User Avatars** | Colorful avatars with initials for easy identification |
 
 ### 🎨 User Interface
 | Feature | Description |
@@ -36,6 +47,7 @@ A modern, real-time peer-to-peer chat application built with **Next.js 16**, **S
 | **User List Sidebar** | See all users in the room with their avatars |
 | **Connection Status** | Visual indicator showing WebSocket connection state |
 | **Copy Room Code** | One-click copy button for sharing room codes |
+| **Saved Codes List** | Quick access to your previously used room codes |
 
 ---
 
@@ -50,20 +62,6 @@ A modern, real-time peer-to-peer chat application built with **Next.js 16**, **S
 | **Tailwind CSS 4** | Utility-first CSS framework |
 | **shadcn/ui** | Beautiful, accessible UI components |
 | **Bun** | Fast JavaScript runtime |
-
----
-
-## 📸 Screenshots
-
-### Landing Page
-The entry point where users can create or join rooms.
-
-![Landing Page](https://via.placeholder.com/800x400/1e293b/10b981?text=Enter+Username+and+Host/Join)
-
-### Chat Room
-Real-time messaging with user list sidebar.
-
-![Chat Room](https://via.placeholder.com/800x500/1e293b/10b981?text=Chat+Room+with+Messages)
 
 ---
 
@@ -83,20 +81,32 @@ See the [How to Run Locally](#-how-to-run-locally) section below.
 1. Enter your username on the landing page
 2. Click the **"Host WebSocket Chat"** button
 3. A unique 6-character room code will be generated
-4. Share this code with your friends
-5. Start chatting!
+4. The code is automatically saved for future use!
+5. Share this code with your friends
+6. Start chatting!
 
 ### Joining a Room
 1. Enter your username on the landing page
 2. Enter the room code shared by your friend in the input field
 3. Click **"Join Room"**
-4. Start chatting!
+4. The code is saved for easy access next time!
+5. Start chatting!
 
-### Sending Private Messages
-1. In the chat room, look at the **Users** sidebar on the right
-2. Click on the user you want to message privately
-3. A purple banner will appear indicating private message mode
-4. Type your message and send - only that user will see it
+### Using Saved Codes
+- Your previously used room codes are saved automatically
+- Click on any saved code to quickly join that room again
+- No need to ask the host for the code again - use "yesterday's code"!
+
+### Sending Emojis
+1. Click the emoji button (😊) in the chat input area
+2. Select an emoji from the picker
+3. The emoji will be inserted into your message
+4. Send and express yourself! 🎉
+
+### Group Chat vs Private Messages
+- **Group Chat** (default): Messages are visible to everyone in the room
+- **Private Chat**: Click on a user in the sidebar to send private messages
+- Switch between group and private by clicking different users or "Everyone"
 
 ### Copying Room Code
 - Click the copy button (📋) next to the room code in the header
@@ -130,7 +140,6 @@ websocket-chat/
 │       └── package.json      # Server dependencies
 ├── 📁 src/components/ui/     # shadcn/ui components
 ├── 📁 src/hooks/             # Custom React hooks
-├── 📁 prisma/                # Database schema (optional)
 ├── package.json              # Main dependencies
 ├── tailwind.config.ts        # Tailwind configuration
 └── README.md                 # This file
@@ -288,7 +297,24 @@ To test the chat functionality:
 7. Enter the room code from step 4
 8. Click "Join Room"
 
-9. Both users can now chat in real-time! 🎉
+9. Both users can now chat in real-time with emojis! 🎉
+
+### Testing New Features
+
+**Code Persistence:**
+- Create a room and join it
+- Refresh the page
+- Your saved codes will appear on the landing page
+- Click any saved code to quickly rejoin
+
+**Group Chat:**
+- Have 3+ users join the same room
+- Everyone can chat in the group by default
+- Click on any user in the sidebar to send private messages
+
+**Emoji Picker:**
+- Click the emoji button (😊) next to the input field
+- Select an emoji to insert it into your message
 
 ### Troubleshooting
 
@@ -298,6 +324,8 @@ To test the chat functionality:
 | "Connecting..." spinner stays | Check if port 3003 is blocked by firewall |
 | Page doesn't load | Verify Next.js server is running on port 3000 |
 | Messages not sending | Check browser console for errors, ensure both servers are running |
+| Saved codes not appearing | Check if localStorage is enabled in your browser |
+| Emojis not showing | Ensure your browser supports Unicode emojis |
 
 ### Port Configuration
 
