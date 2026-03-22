@@ -4,13 +4,12 @@ A modern, real-time peer-to-peer chat application built with **Next.js 16**, **S
 
 **🔗 Live Demo: [https://socket-chat.space.z.ai](https://socket-chat.space.z.ai)**
 
-> ⚠️ **Demo Notice (March 21-25, 2026)**: The live demo will not be updated during this period as I'm on vacation! 🎉
-> - **March 23-25**: Demo will be updated and back online!
+> ✅ **Demo is NOW UPDATED! (March 22, 2026)**
+> - Demo is live and running with all the latest features! 🚀
 > - **March 24 is my birthday EVE!** 🎂
 > - **March 25 is my BIRTHDAY!** 🎂🎉
-> - **BIG updates** coming on March 25!
-> - GitHub repository will continue to receive updates during this time.
-> - Thanks for your patience! 🙏
+> - **BIG updates** still coming on March 25!
+> - Thanks for the overwhelming support from my YouTube channel! 🙏🎉
 
 ![WebSocket Chat](https://img.shields.io/badge/WebSocket-Real--time-emerald?style=for-the-badge)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)
@@ -36,7 +35,7 @@ Chat with friends directly from Minecraft! Available for both Bedrock and Java E
 | **Bedrock** | `.mcaddon` | MC Bedrock 1.19.0+, Enable Beta APIs |
 | **Java** | `.jar` | Fabric Loader, Fabric API, MC Java 1.20.4 |
 
-**Note:** Minecraft integration requires a running demo server or self-hosted server. Demo will be back on March 23-25!
+**Note:** Minecraft integration requires a running demo server or self-hosted server. Demo is NOW LIVE! 🚀
 
 ---
 
