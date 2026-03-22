@@ -5,6 +5,7 @@ A modern, real-time peer-to-peer chat application built with **Next.js 16**, **S
 **🔗 Live Demo: [https://socket-chat.space.z.ai](https://socket-chat.space.z.ai)**
 
 > ⚠️ **Demo Notice (March 21-25, 2026)**: The live demo will not be updated during this period as I'm on vacation! 🎉
+> - **March 23-25**: Demo will be updated and back online!
 > - **March 24 is my birthday EVE!** 🎂
 > - **March 25 is my BIRTHDAY!** 🎂🎉
 > - **BIG updates** coming on March 25!
@@ -22,6 +23,20 @@ A modern, real-time peer-to-peer chat application built with **Next.js 16**, **S
 ![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
 ![macOS](https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=macos&logoColor=white) *(coming soon)*
 ![iOS](https://img.shields.io/badge/iOS-000000?style=for-the-badge&logo=ios&logoColor=white) *(coming soon)*
+
+### 🎮 Minecraft Integration
+![Minecraft](https://img.shields.io/badge/Minecraft-62B47A?style=for-the-badge&logoColor=white)
+![Bedrock](https://img.shields.io/badge/Bedrock-5B5B5B?style=for-the-badge)
+![Java](https://img.shields.io/badge/Java_Edition-ED8B00?style=for-the-badge)
+
+Chat with friends directly from Minecraft! Available for both Bedrock and Java Editions.
+
+| Edition | File | Requirements |
+|---------|------|--------------|
+| **Bedrock** | `.mcaddon` | MC Bedrock 1.19.0+, Enable Beta APIs |
+| **Java** | `.jar` | Fabric Loader, Fabric API, MC Java 1.20.4 |
+
+**Note:** Minecraft integration requires a running demo server or self-hosted server. Demo will be back on March 23-25!
 
 ---
 
@@ -41,6 +56,14 @@ Download the latest release from [GitHub Releases](https://github.com/TheStronge
 ### Mobile App (Android)
 Download the APK from [GitHub Releases](https://github.com/TheStrongestOfTomorrow/websocket-chat/releases):
 - **Android**: `.apk` file - Enable "Install from unknown sources" in settings
+
+### 🎮 Minecraft Addons/Mods
+Download from [GitHub Releases](https://github.com/TheStrongestOfTomorrow/websocket-chat/releases):
+
+| Edition | File | How to Install |
+|---------|------|----------------|
+| **Bedrock** | `.mcaddon` | Double-click or import in-game |
+| **Java (Fabric)** | `.jar` | Place in `mods` folder |
 
 ### Use Web Version
 No download needed! Visit **[https://socket-chat.space.z.ai](https://socket-chat.space.z.ai)** in any modern browser.
