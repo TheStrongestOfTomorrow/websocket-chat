@@ -45,7 +45,6 @@ import {
   Edit2,
   Mic,
   MicOff,
-  Check,
   Phone,
   PhoneOff,
   Video,
