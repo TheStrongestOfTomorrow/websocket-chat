@@ -1,6 +1,6 @@
 [package]
 name = "websocket-chat"
-version = "1.2.4"
+version = "1.2.5"
 description = "Real-time WebSocket Chat Application"
 authors = ["WebSocket Chat Team"]
 edition = "2021"

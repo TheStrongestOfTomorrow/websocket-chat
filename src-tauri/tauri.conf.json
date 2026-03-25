@@ -1,6 +1,6 @@
 {
   "productName": "WebSocket Chat",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "identifier": "com.websocketchat.app",
   "build": {
     "beforeBuildCommand": "bun run build:static",
