@@ -2,9 +2,18 @@
 
 Connect to WebSocket Chat from Minecraft Bedrock Edition!
 
+## 🎮 Supported Versions
+
+| Version | Status |
+|---------|--------|
+| **26.x** (2026) | ✅ Fully Supported |
+| **1.21.x** | ✅ Fully Supported |
+| **1.20.x** | ✅ Fully Supported |
+| **1.19.0+** | ✅ Fully Supported |
+
 ## 📥 Installation
 
-1. Download `WebSocketChat.mcaddon`
+1. Download `WebSocketChat.mcaddon` from [GitHub Releases](https://github.com/TheStrongestOfTomorrow/websocket-chat/releases)
 2. Double-click to open with Minecraft
 3. Or manually copy to `behavior_packs` folder
 
@@ -53,21 +62,21 @@ Type `!menu` to open a graphical interface for:
 
 ## ⚠️ Requirements
 
-- Minecraft Bedrock Edition 1.19.0+
+- Minecraft Bedrock Edition 1.19.0+ (or 26.x)
 - Enable "Beta APIs" in world settings
 
-## 🔗 Demo Server
+## 🔗 Server Connection
 
-By default, connects to: `wss://socket-chat.space.z.ai`
+⚠️ **Demo is temporarily offline.** You'll need to run your own server!
 
-**Note:** Demo server may be temporarily unavailable during maintenance.
+Default server: `wss://socket-chat.space.z.ai` (offline)
 
 ## 📁 Self-Hosting
 
-If you want to host your own server:
+To host your own server:
 1. Clone the main repo
 2. Follow HOSTING.md instructions
-3. The chat will work with your server!
+3. Update the WebSocket URL in `scripts/main.js`
 
 ---
 

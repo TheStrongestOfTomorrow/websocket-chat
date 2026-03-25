@@ -4,21 +4,35 @@ A modern, real-time peer-to-peer chat application built with **Next.js 16**, **S
 
 **🔗 Live Demo: [https://socket-chat.space.z.ai](https://socket-chat.space.z.ai)**
 
-> # 🎉🎂 **BIGGEST UPDATE RELEASED! (March 24, 2026)** 🎂🎉
-> ## IT'S MY BIRTHDAY EVE! 🥳
+> # 🎂🎉 **HAPPY BIRTHDAY TO ME! (March 25, 2026)** 🎉🎂
+> ## THE BIGGEST UPDATE HAS ARRIVED! 🚀
 > 
-> ### 🚀 **ONE OF THE BIGGEST UPDATES HAS LANDED!**
+> ### 🎁 **BIRTHDAY SPECIAL RELEASE!**
 > 
 > **NEW IN THIS UPDATE:**
 > - 🎤 **Voice Messages** - Record and send voice clips!
 > - 📞 **Voice Calls** - Call other users in the room!
 > - 🖥️ **Screen Sharing** - Share your screen with everyone!
-> - 🎮 **Minecraft Integration** - Chat from Minecraft Bedrock & Java!
+> - 🎮 **Minecraft Integration UPDATED** - Now supports **26.x (1.26.x)** for BOTH Bedrock & Java!
+>   - ✅ **New:** Minecraft 26.x / 1.26.x (2026 versions)
+>   - ✅ **Still Supported:** 1.21.x, 1.20.x, and older
 > 
-> **COMING TOMORROW (March 25 - MY BIRTHDAY!):**
-> - Even MORE surprises! 🎁
+> ---
 > 
-> Thanks for the AMAZING support from my YouTube channel! 🙏🔥
+> ### ⚠️ **DEMO TEMPORARILY OFFLINE**
+> 
+> We sincerely apologize, but the live demo is **temporarily offline**. 
+> 
+> The WebSocket Chat requires a **24/7 server** to run both the Next.js frontend and Socket.io backend. We're working on getting it back online soon!
+> 
+> **In the meantime:**
+> - 📥 **Download the Desktop/Mobile apps** from [GitHub Releases](https://github.com/TheStrongestOfTomorrow/websocket-chat/releases)
+> - 🖥️ **Run locally** - See the "How to Run Locally" section below
+> - 🎮 **Use Minecraft integration** with your own hosted server!
+> 
+> Thank you for your patience and amazing support from my YouTube channel! 🙏❤️
+> 
+> ---
 
 ![WebSocket Chat](https://img.shields.io/badge/WebSocket-Real--time-emerald?style=for-the-badge)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)
@@ -39,12 +53,16 @@ A modern, real-time peer-to-peer chat application built with **Next.js 16**, **S
 
 Chat with friends directly from Minecraft! Available for both Bedrock and Java Editions.
 
-| Edition | File | Requirements |
-|---------|------|--------------|
-| **Bedrock** | `.mcaddon` | MC Bedrock 1.19.0+, Enable Beta APIs |
-| **Java** | `.jar` | Fabric Loader, Fabric API, MC Java 1.20.4 |
+| Edition | File | Supported Versions |
+|---------|------|-------------------|
+| **Bedrock** | `.mcaddon` | **26.x** (2026), 1.21.x, 1.20.x, 1.19.0+ |
+| **Java** | `.jar` (Fabric) | **1.26.x** (2026), 1.21.x, 1.20.4+ |
 
-**Note:** Minecraft integration requires a running demo server or self-hosted server. Demo is NOW LIVE! 🚀
+**Requirements:**
+- **Bedrock:** Enable "Beta APIs" in world settings
+- **Java:** Fabric Loader + Fabric API installed
+
+**Note:** Minecraft integration requires a running WebSocket server. Demo is temporarily offline, but you can run your own server locally!
 
 ---
 
@@ -68,13 +86,15 @@ Download the APK from [GitHub Releases](https://github.com/TheStrongestOfTomorro
 ### 🎮 Minecraft Addons/Mods
 Download from [GitHub Releases](https://github.com/TheStrongestOfTomorrow/websocket-chat/releases):
 
-| Edition | File | How to Install |
-|---------|------|----------------|
-| **Bedrock** | `.mcaddon` | Double-click or import in-game |
-| **Java (Fabric)** | `.jar` | Place in `mods` folder |
+| Edition | File | How to Install | Supported Versions |
+|---------|------|----------------|-------------------|
+| **Bedrock** | `.mcaddon` | Double-click or import in-game | **26.x**, 1.21.x, 1.20.x, 1.19.0+ |
+| **Java (Fabric)** | `.jar` | Place in `mods` folder | **1.26.x**, 1.21.x, 1.20.4+ |
 
 ### Use Web Version
-No download needed! Visit **[https://socket-chat.space.z.ai](https://socket-chat.space.z.ai)** in any modern browser.
+⚠️ **Demo is temporarily offline.** 
+
+In the meantime, please download the desktop or mobile apps, or run the project locally!
 
 ---
 
@@ -163,12 +183,23 @@ No download needed! Visit **[https://socket-chat.space.z.ai](https://socket-chat
 - **Desktop**: Download from [GitHub Releases](https://github.com/TheStrongestOfTomorrow/websocket-chat/releases)
 - **Android**: Download APK from [GitHub Releases](https://github.com/TheStrongestOfTomorrow/websocket-chat/releases)
 
-### Option 2: Use the Live Demo
-**🔗 [https://socket-chat.space.z.ai](https://socket-chat.space.z.ai)**
+### Option 2: Run Locally (Demo Offline)
+⚠️ The live demo is **temporarily offline**. 
 
-Visit the live demo and start chatting immediately!
+**But you can still use WebSocket Chat!** Just run it locally:
 
-### Option 3: Run Locally
+```bash
+# Quick start (see full instructions below)
+git clone https://github.com/TheStrongestOfTomorrow/websocket-chat.git
+cd websocket-chat
+bun install
+bun run dev  # Terminal 1: Frontend
+cd mini-services/chat-server && bun run dev  # Terminal 2: WebSocket Server
+```
+
+Then open `http://localhost:3000` in your browser!
+
+### Option 3: Production Hosting
 See the **[HOSTING.md](./HOSTING.md)** for comprehensive guides on:
 - 🖥️ Local development (Bun, npm, Docker, PM2)
 - ☁️ Production hosting (Vercel, Railway, DigitalOcean, AWS, Heroku, Render)

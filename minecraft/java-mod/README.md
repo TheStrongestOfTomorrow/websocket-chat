@@ -2,17 +2,26 @@
 
 Connect to WebSocket Chat from Minecraft Java Edition!
 
+## 🎮 Supported Versions
+
+| Version | Status |
+|---------|--------|
+| **1.26.x** (2026) | ✅ Fully Supported |
+| **1.21.x** | ✅ Fully Supported |
+| **1.20.x+** | ✅ Fully Supported |
+
 ## 📥 Installation
 
-1. Download `websocketchat-mod-1.0.0.jar`
+1. Download `websocketchat-mod-1.2.0.jar` from [GitHub Releases](https://github.com/TheStrongestOfTomorrow/websocket-chat/releases)
 2. Place in your `mods` folder
 3. Requires Fabric Loader and Fabric API
 
 ### Requirements
 
-- Minecraft Java Edition 1.20.4
-- [Fabric Loader](https://fabricmc.net/use/) 0.15.6+
-- [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api) 0.96.11+
+- Minecraft Java Edition 1.20.0+ (or 1.26.x)
+- [Fabric Loader](https://fabricmc.net/use/) 0.15.0+
+- [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api) latest
+- Java 21+
 
 ## 🎮 Commands
 
@@ -53,11 +62,11 @@ Connect to WebSocket Chat from Minecraft Java Edition!
    /wc Hello from Minecraft!
    ```
 
-## 🔗 Demo Server
+## 🔗 Server Connection
 
-By default, connects to: `wss://socket-chat.space.z.ai`
+⚠️ **Demo is temporarily offline.** You'll need to run your own server!
 
-**Note:** Demo server may be temporarily unavailable during maintenance.
+Default server: `wss://socket-chat.space.z.ai` (offline)
 
 ## 🔨 Building from Source
 
@@ -71,10 +80,10 @@ The mod will be in `build/libs/`
 
 ## 📁 Self-Hosting
 
-If you want to host your own server:
+To host your own server:
 1. Clone the main repo
 2. Follow HOSTING.md instructions
-3. The chat will work with your server!
+3. Update the WebSocket URL in `ChatClient.java`
 
 ---
 
