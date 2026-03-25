@@ -1,9 +1,9 @@
 {
   "productName": "WebSocket Chat",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "identifier": "com.websocketchat.app",
   "build": {
-    "beforeBuildCommand": "STATIC_EXPORT=true bun run build",
+    "beforeBuildCommand": "bun run build:static",
     "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:3000",
     "frontendDist": "../out"
