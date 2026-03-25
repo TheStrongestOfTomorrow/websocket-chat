@@ -6,6 +6,9 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   # ====================
   # Linux Build Job
@@ -70,7 +73,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: websocket-chat-linux-deb
+          name: linux-deb
           path: src-tauri/target/release/bundle/deb/*.deb
           if-no-files-found: ignore
 
@@ -78,7 +81,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: websocket-chat-linux-appimage
+          name: linux-appimage
           path: src-tauri/target/release/bundle/appimage/*.AppImage
           if-no-files-found: ignore
 
@@ -131,7 +134,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: websocket-chat-windows-msi
+          name: windows-msi
           path: src-tauri/target/release/bundle/msi/*.msi
           if-no-files-found: ignore
 
@@ -139,7 +142,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: websocket-chat-windows-exe
+          name: windows-exe
           path: src-tauri/target/release/bundle/nsis/*.exe
           if-no-files-found: ignore
 
@@ -199,7 +202,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: websocket-chat-android-apk
+          name: android-apk
           path: android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: ignore
 
@@ -210,40 +213,54 @@ jobs:
     needs: [build-linux, build-windows, build-android]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
     
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download all artifacts
+      - name: Download Linux DEB
         uses: actions/download-artifact@v4
         with:
+          name: linux-deb
           path: artifacts
-          merge-multiple: false
+        continue-on-error: true
+
+      - name: Download Linux AppImage
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-appimage
+          path: artifacts
+        continue-on-error: true
+
+      - name: Download Windows MSI
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-msi
+          path: artifacts
+        continue-on-error: true
+
+      - name: Download Windows EXE
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-exe
+          path: artifacts
+        continue-on-error: true
+
+      - name: Download Android APK
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk
+          path: artifacts
         continue-on-error: true
 
       - name: List artifacts
-        run: find artifacts -type f 2>/dev/null || echo "No artifacts found"
+        run: ls -la artifacts/ 2>/dev/null || echo "No artifacts found"
 
-      - name: Create Release
+      - name: Upload Release Assets
         uses: softprops/action-gh-release@v1
         with:
-          name: WebSocket Chat ${{ github.ref_name }}
-          body: |
-            # WebSocket Chat ${{ github.ref_name }}
-            
-            ## Downloads
-            
-            | Platform | File |
-            |----------|------|
-            | Windows | `.exe` or `.msi` installer |
-            | Linux | `.deb`, `.AppImage` |
-            | Android | `.apk` |
-            
-            > Note: If downloads are missing, check the Actions tab for build errors.
-            
-          files: artifacts/**/*
-          draft: false
-          prerelease: false
+          files: artifacts/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
