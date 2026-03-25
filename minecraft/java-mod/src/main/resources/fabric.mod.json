@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "websocketchat",
+  "version": "1.0.0",
+  "name": "WebSocket Chat",
+  "description": "Connect to WebSocket Chat from Minecraft! Create or join chat rooms.",
+  "authors": ["TheStrongestOfTomorrow"],
+  "contact": {
+    "homepage": "https://github.com/TheStrongestOfTomorrow/websocket-chat",
+    "sources": "https://github.com/TheStrongestOfTomorrow/websocket-chat"
+  },
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.websocketchat.client.WebSocketChatMod"]
+  },
+  "mixins": [],
+  "depends": {
+    "fabricloader": ">=0.14.0",
+    "minecraft": "~1.20.0",
+    "java": ">=17"
+  }
+}
