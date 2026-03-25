@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "websocketchat",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "name": "WebSocket Chat",
   "description": "Connect to WebSocket Chat from Minecraft! Voice messages, calls, screen sharing. Supports MC 1.26.x, 1.21.x, 1.20.x+",
   "authors": ["TheStrongestOfTomorrow"],
