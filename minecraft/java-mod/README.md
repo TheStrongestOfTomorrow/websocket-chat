@@ -1,5 +1,7 @@
 # WebSocket Chat - Minecraft Java Mod
 
+**Version: 1.2.2** | Birthday Special Release! 🎂
+
 Connect to WebSocket Chat from Minecraft Java Edition!
 
 ## 🎮 Supported Versions
@@ -10,10 +12,18 @@ Connect to WebSocket Chat from Minecraft Java Edition!
 | **1.21.x** | ✅ Fully Supported |
 | **1.20.x+** | ✅ Fully Supported |
 
+## ✨ Features
+
+- 💬 Real-time chat with friends
+- 🎤 Voice Messages support
+- 📞 Voice Calls integration
+- 🖥️ Screen Sharing notifications
+- 🎨 In-game commands
+
 ## 📥 Installation
 
-1. Download `websocketchat-mod-1.2.0.jar` from [GitHub Releases](https://github.com/TheStrongestOfTomorrow/websocket-chat/releases)
-2. Place in your `mods` folder
+1. Download from [GitHub Releases](https://github.com/TheStrongestOfTomorrow/websocket-chat/releases)
+2. Place `.jar` in your `mods` folder
 3. Requires Fabric Loader and Fabric API
 
 ### Requirements
@@ -35,38 +45,15 @@ Connect to WebSocket Chat from Minecraft Java Edition!
 | `/wcstatus` | Show connection status |
 | `/wcdisconnect` | Disconnect from server |
 | `/wchelp` | Show all commands |
-| `/wcmenu` | Open menu (basic) |
-
-## 🎯 Quick Start
-
-1. **Connect to server:**
-   ```
-   /wcconnect
-   ```
-
-2. **Create a room:**
-   ```
-   /wchost Steve
-   ```
-   You'll get a 6-character room code like `A3K7XM`
-
-3. **Share the code** with friends!
-
-4. **Friends join:**
-   ```
-   /wcjoin Alex A3K7XM
-   ```
-
-5. **Chat!**
-   ```
-   /wc Hello from Minecraft!
-   ```
 
 ## 🔗 Server Connection
 
 ⚠️ **Demo is temporarily offline.** You'll need to run your own server!
 
-Default server: `wss://socket-chat.space.z.ai` (offline)
+To host your own server:
+1. Clone the main repo
+2. Follow HOSTING.md instructions
+3. Update the WebSocket URL in `ChatClient.java`
 
 ## 🔨 Building from Source
 
@@ -78,13 +65,6 @@ cd websocket-chat/minecraft/java-mod
 
 The mod will be in `build/libs/`
 
-## 📁 Self-Hosting
-
-To host your own server:
-1. Clone the main repo
-2. Follow HOSTING.md instructions
-3. Update the WebSocket URL in `ChatClient.java`
-
 ---
 
-Made with ❤️ for WebSocket Chat
+Made with ❤️ for WebSocket Chat | 🎂 Birthday Special!

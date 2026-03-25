@@ -119,7 +119,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - uses: oven-sh/setup-bun@v1
 
@@ -136,9 +136,9 @@ jobs:
 
       - run: bun run build:static
 
-      - run: bunx cap add android || true
+      - run: bunx cap add android
 
-      - run: bunx cap sync android || true
+      - run: bunx cap sync android
 
       - name: Build APK
         run: |
