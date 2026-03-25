@@ -1,7 +1,7 @@
 {
   "appId": "com.websocketchat.app",
   "appName": "WebSocket Chat",
-  "webDir": ".next",
+  "webDir": "out",
   "server": {
     "androidScheme": "https"
   },
